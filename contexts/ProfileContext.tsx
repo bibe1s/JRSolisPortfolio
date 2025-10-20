@@ -66,7 +66,6 @@ updatePersonalInfo: (mode: ProfileMode, updates: Partial<PersonalInfo>) => void;
   
   // Save/Cancel system
   saveChanges: () => void;
-  discardChanges: () => void;
   
   // Export/Import
   exportProfile: () => string;
@@ -118,16 +117,19 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // ============================================
   
   useEffect(() => {
-    const savedData = localStorage.getItem('portfolio-profile');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setProfile(parsed);
-        setSavedProfile(parsed);
-      } catch (error) {
+    // Load profile from API instead of localStorage
+    fetch('/api/profile')
+      .then(res => res.json())
+      .then(data => {
+        setProfile(data);
+        setSavedProfile(data);
+      })
+      .catch(error => {
         console.error('Failed to load profile:', error);
-      }
-    }
+        // Fallback to default if API fails
+        setProfile(defaultProfile);
+        setSavedProfile(defaultProfile);
+      });
   }, []);
   
   // ============================================
@@ -594,25 +596,44 @@ const updateLayoutType = (mode: ProfileMode, layoutType: LayoutType) => {
   // SAVE / CANCEL
   // ============================================
   
-const saveChanges = () => {
-  // Save to localStorage
-  localStorage.setItem('portfolio-profile', JSON.stringify(profile));
-  
-  // Update saved state
-  setSavedProfile(profile);
-  
-  // Trigger custom event for preview update
-  window.dispatchEvent(new Event('profile-updated'));
-  
-  console.log('✅ Changes saved!');
-};
+const saveChanges = async () => {
+  try {
+    // Get auth token from localStorage (set during login)
+    const token = localStorage.getItem('auth-token');
+    
+    if (!token) {
+      console.error('No auth token found');
+      alert('Please log in again');
+      return;
+    }
 
-// ADD THIS FUNCTION:
-const discardChanges = () => {
-  // Revert to last saved state
-  setProfile(savedProfile);
-  
-  console.log('↩️ Changes discarded!');
+    // Save to API instead of localStorage
+    const response = await fetch('/api/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(profile)
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save');
+    }
+
+    // Update saved state
+    setSavedProfile(profile);
+    
+    // Trigger custom event for preview update
+    window.dispatchEvent(new Event('profile-updated'));
+    
+    console.log('✅ Changes saved to server!');
+    alert('✅ Changes saved successfully!');
+    
+  } catch (error) {
+    console.error('❌ Failed to save:', error);
+    alert('❌ Failed to save changes. Please try again.');
+  }
 };
 
   // ============================================
@@ -663,7 +684,6 @@ const discardChanges = () => {
     updateBackground,
     updateLayoutType,
     saveChanges,
-    discardChanges,
     exportProfile,
     importProfile,
   };
