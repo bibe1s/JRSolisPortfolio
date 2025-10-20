@@ -1,0 +1,12 @@
+/* app/components/backgrounds/BackgroundWrapper.css */
+
+/* Re-enable pointer events for interactive elements in the content layer */
+.content-wrapper a,
+.content-wrapper button,
+.content-wrapper input,
+.content-wrapper select,
+.content-wrapper textarea,
+.content-wrapper [role="button"],
+.content-wrapper [tabindex] {
+  pointer-events: auto; /* Ensure links, buttons, etc., remain clickable */
+}
