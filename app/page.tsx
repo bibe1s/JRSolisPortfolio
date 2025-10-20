@@ -177,7 +177,7 @@ export default function PreviewPage() {
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
-            Web3 
+            Web3
           </button>
         </div>
       )}
