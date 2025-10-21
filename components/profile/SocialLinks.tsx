@@ -42,7 +42,7 @@ export function SocialLinks({ links }: SocialLinksProps) {
   if (!links || links.length === 0) return null;
 
   return (
-    <div className="flex justify-center gap-4 p-6">
+    <div className="flex justify-center gap-4">
       {links.map((link) => {
         const config = getPlatformConfig(link.platform);
         if (!config) return null;

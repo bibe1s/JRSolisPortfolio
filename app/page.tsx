@@ -66,12 +66,18 @@ export default function PreviewPage() {
 
   // ✅ NEW: Auto-refresh every 10 seconds (for other devices)
   useEffect(() => {
-    const interval = setInterval(() => {
-      loadProfile();
-    }, 10000); // Refresh every 10 seconds
 
-    return () => clearInterval(interval);
-  }, []);
+  // Only auto-refresh on desktop (screen width > 768px)
+  if (window.innerWidth < 768) {
+    return; // Skip auto-refresh on mobile
+  }
+
+  const interval = setInterval(() => {
+    loadProfile();
+  }, 30000); // 30 seconds - less frequent
+  
+  return () => clearInterval(interval);
+}, []);
 
   // Show loading state
   if (isLoading) {
