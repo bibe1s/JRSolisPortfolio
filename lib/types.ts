@@ -39,7 +39,7 @@ export type SocialPlatform =
   | 'youtube' 
   | 'tiktok' 
   | 'behance' 
-  | 'dribbble' 
+  | 'dribbble'
   | 'medium';
 
 // Interface for individual images in a gallery
@@ -57,8 +57,8 @@ export interface ContentBlock {
   type: ContentBlockType;        // Type of content: 'title' or 'context'
   content: string;               // Text content of the block
   duration?: string;             // Optional duration (e.g., "2023 - 2024")
-  image?: string;                // Optional image URL (landscape orientation recommended)
-  imageLink?: string;            // Optional link when image is clicked
+  image?: string[];                // Optional image URL (landscape orientation recommended)
+  imageLink?: string[];            // Optional link when image is clicked
   order: number;                 // Sorting order
   enableGlassEffect?: boolean;   // Glass effect for this block
 }

@@ -1,3 +1,5 @@
+// app/api/profile/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { neon } from '@neondatabase/serverless';

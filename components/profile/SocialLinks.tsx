@@ -16,7 +16,7 @@ import {
   Video,
   Palette,
   Dribbble,
-  BookOpen
+  BookOpen, 
 } from 'lucide-react';
 
 interface SocialLinksProps {
