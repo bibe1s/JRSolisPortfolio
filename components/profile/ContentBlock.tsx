@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { ContentBlock as ContentBlockType } from '@/lib/types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { ImageLightbox } from './ImageLightbox';
 
 interface ContentBlockProps {
   block: ContentBlockType;
@@ -18,18 +19,30 @@ export function ContentBlock({
     ? 'backdrop-blur-md bg-black/50 p-4 rounded-lg' 
     : '';
 
-  // Support both old (single image) and new (multiple images) format
-  const images = block.image || (block.image ? [block.image] : []);
-  const imageLinks = block.imageLink || (block.imageLink ? [block.imageLink] : []);
+  // Get images and links arrays (ensure they're arrays)
+  const images = block.image || [];
+  const imageLinks = block.imageLink || [];
   
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const handlePrevious = () => {
+  const handlePrevious = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setActiveIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
   };
 
-  const handleNext = () => {
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setActiveIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+  };
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('🖼️ Image clicked! Opening lightbox...');
+    setLightboxOpen(true);
   };
 
   // Render text content
@@ -69,77 +82,92 @@ export function ContentBlock({
     const currentLink = imageLinks[activeIndex];
 
     return (
-      <div className="mt-3 relative group">
-        {/* Image */}
-        <div className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden">
-          {currentLink ? (
-            <a 
-              href={currentLink} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="block w-full h-full"
-            >
-              <img
-                src={currentImage}
-                alt={block.content || `Image ${activeIndex + 1}`}
-                className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-              />
-            </a>
-          ) : (
+      <>
+        <div className="mt-3 relative group">
+          {/* Image - Added pointer-events-auto and z-index */}
+          <div 
+            className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer pointer-events-auto z-10"
+            onClick={handleImageClick}
+            style={{ pointerEvents: 'auto' }}
+          >
             <img
               src={currentImage}
               alt={block.content || `Image ${activeIndex + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform hover:scale-105 pointer-events-auto"
+              style={{ pointerEvents: 'auto' }}
             />
-          )}
 
-          {/* Navigation Arrows - Only show if multiple images */}
+            {/* Expand Icon Overlay */}
+            <div className="absolute top-2 right-2 bg-black/60 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <Maximize2 className="w-5 h-5" />
+            </div>
+
+            {/* Navigation Arrows - Only show if multiple images */}
+            {images.length > 1 && (
+              <>
+                {/* Left Arrow - Smaller clickable area */}
+                <div className="absolute left-0 top-0 bottom-0 w-20 flex items-center justify-start pl-2 z-20 pointer-events-auto">
+                  <button
+                    onClick={handlePrevious}
+                    className="bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-all pointer-events-auto"
+                    style={{ pointerEvents: 'auto' }}
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Right Arrow - Smaller clickable area */}
+                <div className="absolute right-0 top-0 bottom-0 w-20 flex items-center justify-end pr-2 z-20 pointer-events-auto">
+                  <button
+                    onClick={handleNext}
+                    className="bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-all pointer-events-auto"
+                    style={{ pointerEvents: 'auto' }}
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Image Counter */}
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full z-10 pointer-events-none">
+                  {activeIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Dots Indicator (if multiple images) */}
           {images.length > 1 && (
-            <>
-              {/* Left Arrow */}
-              <button
-                onClick={handlePrevious}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-
-              {/* Right Arrow */}
-              <button
-                onClick={handleNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label="Next image"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-
-              {/* Image Counter */}
-              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                {activeIndex + 1} / {images.length}
-              </div>
-            </>
+            <div className="flex justify-center gap-2 mt-2 pointer-events-auto">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all pointer-events-auto ${
+                    index === activeIndex 
+                      ? 'bg-blue-500 w-6' 
+                      : 'bg-gray-500 hover:bg-gray-400'
+                  }`}
+                  style={{ pointerEvents: 'auto' }}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Dots Indicator (if multiple images) */}
-        {images.length > 1 && (
-          <div className="flex justify-center gap-2 mt-2">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === activeIndex 
-                    ? 'bg-blue-500 w-6' 
-                    : 'bg-gray-500 hover:bg-gray-400'
-                }`}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
-          </div>
+        {/* Lightbox */}
+        {lightboxOpen && (
+          <ImageLightbox
+            images={images}
+            imageLinks={imageLinks}
+            initialIndex={activeIndex}
+            isOpen={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
         )}
-      </div>
+      </>
     );
   };
 

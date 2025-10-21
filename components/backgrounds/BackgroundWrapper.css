@@ -7,6 +7,8 @@
 .content-wrapper select,
 .content-wrapper textarea,
 .content-wrapper [role="button"],
-.content-wrapper [tabindex] {
-  pointer-events: auto; /* Ensure links, buttons, etc., remain clickable */
+.content-wrapper [tabindex],
+.content-wrapper [onclick],
+.content-wrapper .cursor-pointer {
+  pointer-events: auto; /* Ensure links, buttons, and clickable elements remain clickable */
 }
