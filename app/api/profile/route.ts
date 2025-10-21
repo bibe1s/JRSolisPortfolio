@@ -1,4 +1,3 @@
-// app/api/profile/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { neon } from '@neondatabase/serverless';
@@ -48,8 +47,9 @@ export async function GET() {
       LIMIT 1
     `;
     
-    // If no data, insert default
+    // If no data, insert default and return it
     if (result.length === 0) {
+      console.log('No profile found, creating default...');
       await sql`
         INSERT INTO portfolio (data)
         VALUES (${JSON.stringify(defaultProfile)})
@@ -57,16 +57,17 @@ export async function GET() {
       return NextResponse.json(defaultProfile);
     }
     
+    console.log('Profile loaded successfully');
     return NextResponse.json(result[0].data);
   } catch (error) {
     console.error('Failed to load profile:', error);
+    // Return default profile as fallback
     return NextResponse.json(defaultProfile);
   }
 }
 
 // POST - Save profile (requires authentication)
 export async function POST(request: NextRequest) {
-  // Verify authentication
   const user = await verifyToken(request);
   
   if (!user) {
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     const profile = await request.json();
     const sql = neon(process.env.DATABASE_URL!);
     
-    // Check if table exists and has data
+    // Check if table has data
     const result = await sql`
       SELECT id FROM portfolio 
       ORDER BY id DESC 
@@ -89,12 +90,14 @@ export async function POST(request: NextRequest) {
     
     if (result.length === 0) {
       // Insert new
+      console.log('Inserting new profile...');
       await sql`
         INSERT INTO portfolio (data)
         VALUES (${JSON.stringify(profile)})
       `;
     } else {
       // Update existing
+      console.log('Updating existing profile...');
       await sql`
         UPDATE portfolio 
         SET data = ${JSON.stringify(profile)}, 
@@ -103,6 +106,7 @@ export async function POST(request: NextRequest) {
       `;
     }
     
+    console.log('Profile saved successfully!');
     return NextResponse.json({ 
       success: true,
       message: 'Profile saved successfully' 

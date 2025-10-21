@@ -1,7 +1,7 @@
 // app/components/contexts/ProfileContext.tsx
 
 "use client";
-
+import Cookies from 'js-cookie';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   Profile, 
@@ -102,6 +102,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // ============================================
 
   useEffect(() => {
+    // Safety check: make sure displaySettings exists
+    if (!profile.displaySettings) return;
+    
     const { showWeb2, showWeb3 } = profile.displaySettings;
     
     // If current mode is disabled, switch to the enabled one
@@ -110,7 +113,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     } else if (currentMode === 'web3' && !showWeb3 && showWeb2) {
       setCurrentMode('web2');
     }
-  }, [profile.displaySettings.showWeb2, profile.displaySettings.showWeb3, currentMode]);
+  }, [profile.displaySettings?.showWeb2, profile.displaySettings?.showWeb3, currentMode]);
   
   // ============================================
   // LOAD FROM LOCALSTORAGE ON MOUNT
@@ -598,8 +601,8 @@ const updateLayoutType = (mode: ProfileMode, layoutType: LayoutType) => {
   
 const saveChanges = async () => {
   try {
-    // Get auth token from localStorage (set during login)
-    const token = localStorage.getItem('auth-token');
+    // Get auth token from cookies (changed from localStorage)
+    const token = Cookies.get('auth_token');
     
     if (!token) {
       console.error('No auth token found');
@@ -607,7 +610,7 @@ const saveChanges = async () => {
       return;
     }
 
-    // Save to API instead of localStorage
+    // Save to API
     const response = await fetch('/api/profile', {
       method: 'POST',
       headers: {
@@ -623,9 +626,6 @@ const saveChanges = async () => {
 
     // Update saved state
     setSavedProfile(profile);
-    
-    // Trigger custom event for preview update
-    window.dispatchEvent(new Event('profile-updated'));
     
     console.log('✅ Changes saved to server!');
     alert('✅ Changes saved successfully!');
