@@ -1,5 +1,4 @@
 // app/page.tsx
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -16,63 +15,75 @@ import { RightSideLayout } from '@/components/layouts/RightSideLayout';
 export default function PreviewPage() {
   const [profile, setProfile] = useState<Profile>(defaultProfile);
   const [currentMode, setCurrentMode] = useState<ProfileMode>('web2');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load profile from localStorage
+  // ✅ NEW: Load profile from API instead of localStorage
+  const loadProfile = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      const data = await response.json();
+      
+      setProfile(data);
+
+      // Auto-switch mode if current mode is disabled
+      const { showWeb2, showWeb3, defaultView } = data.displaySettings;
+      let modeToUse = defaultView || 'web2';
+
+      // If default view is disabled, use the enabled one
+      if (modeToUse === 'web2' && !showWeb2 && showWeb3) {
+        modeToUse = 'web3';
+      } else if (modeToUse === 'web3' && !showWeb3 && showWeb2) {
+        modeToUse = 'web2';
+      }
+
+      setCurrentMode(modeToUse);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      setProfile(defaultProfile);
+      setIsLoading(false);
+    }
+  };
+
+  // Load profile on mount
   useEffect(() => {
-    const loadProfile = () => {
-      const saved = localStorage.getItem('portfolio-profile');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setProfile(parsed);
-
-          // Auto-switch mode if current mode is disabled
-          const { showWeb2, showWeb3, defaultView } = parsed.displaySettings;
-          let modeToUse = defaultView || 'web2';
-
-          // If default view is disabled, use the enabled one
-          if (modeToUse === 'web2' && !showWeb2 && showWeb3) {
-            modeToUse = 'web3';
-          } else if (modeToUse === 'web3' && !showWeb3 && showWeb2) {
-            modeToUse = 'web2';
-          }
-
-          setCurrentMode(modeToUse);
-
-        } catch (error) {
-          console.error('Failed to load profile:', error);
-        }
-      }
-    };
-
-    // Initial load
     loadProfile();
+  }, []);
 
-    // Listen for storage changes (when editor saves)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'portfolio-profile' && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          setProfile(parsed);
-        } catch (error) {
-          console.error('Failed to parse profile:', error);
-        }
-      }
-    };
-
-    // ALSO listen for custom event (for same-tab updates)
-    const handleCustomUpdate = () => {
+  // ✅ NEW: Listen for profile updates (when you save in editor)
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      console.log('🔄 Profile updated, refreshing from API...');
       loadProfile();
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('profile-updated', handleCustomUpdate);
-
+    window.addEventListener('profile-updated', handleProfileUpdate);
+    
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('profile-updated', handleCustomUpdate);
+      window.removeEventListener('profile-updated', handleProfileUpdate);
     };
   }, []);
+
+  // ✅ NEW: Auto-refresh every 10 seconds (for other devices)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadProfile();
+    }, 10000); // Refresh every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading portfolio...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Get current sections based on mode
   const currentSections = profile[currentMode].sections;
