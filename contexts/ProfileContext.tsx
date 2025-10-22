@@ -66,6 +66,8 @@ updatePersonalInfo: (mode: ProfileMode, updates: Partial<PersonalInfo>) => void;
   
   // Save/Cancel system
   saveChanges: () => void;
+  discardChanges: () => void;
+
   
   // Export/Import
   exportProfile: () => string;
@@ -601,7 +603,6 @@ const updateLayoutType = (mode: ProfileMode, layoutType: LayoutType) => {
   
 const saveChanges = async () => {
   try {
-    // Get auth token from cookies (changed from localStorage)
     const token = Cookies.get('auth_token');
     
     if (!token) {
@@ -610,7 +611,8 @@ const saveChanges = async () => {
       return;
     }
 
-    // Save to API
+    console.log('💾 Saving profile to server...');
+
     const response = await fetch('/api/profile', {
       method: 'POST',
       headers: {
@@ -620,11 +622,14 @@ const saveChanges = async () => {
       body: JSON.stringify(profile)
     });
 
+    // ✅ BETTER ERROR HANDLING - Show actual error
     if (!response.ok) {
-      throw new Error('Failed to save');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('❌ Server error:', errorData);
+      throw new Error(errorData.error || errorData.details || `Server returned ${response.status}`);
     }
 
-    // Update saved state
+    const result = await response.json();
     setSavedProfile(profile);
     
     console.log('✅ Changes saved to server!');
@@ -632,9 +637,19 @@ const saveChanges = async () => {
     
   } catch (error) {
     console.error('❌ Failed to save:', error);
-    alert('❌ Failed to save changes. Please try again.');
+    alert(`❌ Failed to save changes: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
+
+// ============================================
+// DISCARD CHANGES
+// ============================================
+
+const discardChanges = () => {
+  console.log('↩️ Discarding changes, reverting to saved profile...');
+  setProfile(savedProfile);
+};
+
 
   // ============================================
   // EXPORT / IMPORT
@@ -684,6 +699,7 @@ const saveChanges = async () => {
     updateBackground,
     updateLayoutType,
     saveChanges,
+    discardChanges,
     exportProfile,
     importProfile,
   };

@@ -40,8 +40,8 @@ export function SectionsList() {
     type: ContentBlockType, 
     content: string, 
     duration?: string,
-    image?: string,
-    imageLink?: string
+    image?: string[],
+    imageLink?: string[]
   ) => {
     if (!selectedSectionId) return;
 
@@ -123,7 +123,7 @@ export function SectionsList() {
                                 <div className="mt-2">
                                   <div className="w-full aspect-video bg-gray-200 rounded overflow-hidden">
                                     <img
-                                      src={block.image}
+                                      src={block.image[0]}
                                       alt="Block preview"
                                       className="w-full h-full object-cover"
                                     />
