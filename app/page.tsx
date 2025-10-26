@@ -174,7 +174,7 @@ export default function PreviewPage() {
             onClick={() => setCurrentMode('web2')}
             className={`px-6 py-2 rounded-lg font-medium transition-all ${
               currentMode === 'web2'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-green-800 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
@@ -184,7 +184,7 @@ export default function PreviewPage() {
             onClick={() => setCurrentMode('web3')}
             className={`px-6 py-2 rounded-lg font-medium transition-all ${
               currentMode === 'web3'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-red-800 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
