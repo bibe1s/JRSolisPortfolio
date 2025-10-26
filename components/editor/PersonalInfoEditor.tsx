@@ -24,14 +24,14 @@ export function PersonalInfoEditor() {
 
     // Validate file
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 100 * 1024 * 1024; // 100MB
 
     if (!validTypes.includes(file.type)) {
       alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
       return;
     }
     if (file.size > maxSize) {
-      alert('File too large. Maximum size is 5MB.');
+      alert('File too large. Maximum size is 100MB.');
       return;
     }
 
