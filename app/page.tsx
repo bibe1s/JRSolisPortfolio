@@ -118,17 +118,12 @@ export default function PreviewPage() {
           <div className="min-h-screen text-white">
             {/* Main Content */}
             <div className="max-w-4xl mx-auto py-8">
-              {/* Profile Card */}
               <HolographicProfileCard personal={profile[currentMode].personal} />
-
-              {/* Social Links */}
               <SocialLinks links={profile[currentMode].socialLinks} />
-
-              {/* Divider */}
+              
               <div className="border-t border-gray-800 my-8"></div>
 
-              {/* Sections */}
-              <div className="px-8 space-y-8">
+              <div className="space-y-8">
                 {currentSections
                   .slice()
                   .sort((a, b) => a.order - b.order)
@@ -173,7 +168,6 @@ export default function PreviewPage() {
 
   return (
     <BackgroundWrapper config={currentBackground}>
-      {/* Mode Toggle (if both modes enabled) */}
       {showToggle && (
         <div className="fixed top-4 right-4 z-50 flex gap-2">
           <button
@@ -199,7 +193,6 @@ export default function PreviewPage() {
         </div>
       )}
 
-      {/* Render the appropriate layout */}
       {renderLayout()}
     </BackgroundWrapper>
   );
