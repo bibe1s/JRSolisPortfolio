@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     if (file.size > maxSize) {
       console.log('❌ File too large:', file.size);
       return NextResponse.json(
-        { error: 'File too large. Maximum size is 10MB.' },
+        { error: 'File too large. Maximum size is 100MB.' },
         { status: 400 }
       );
     }
