@@ -75,8 +75,8 @@ function DraggableSection({ section, mode }: any) {
     type: ContentBlockType, 
     content: string, 
     duration?: string,
-    image?: string,
-    imageLink?: string
+    image?: string[],
+    imageLink?: string[]
   ) => {
     if (editingBlock) {
       // Update existing block
@@ -420,8 +420,8 @@ const handleSaveTech = (name: string, iconUrl: string, link?: string) => {
           type: editingBlock.type,
           content: editingBlock.content,
           duration: editingBlock.duration,
-          image: editingBlock.image,
-          imageLink: editingBlock.imageLink,
+          images: editingBlock.image,
+          imageLinks: editingBlock.imageLink,
         } : undefined}
       />
 
